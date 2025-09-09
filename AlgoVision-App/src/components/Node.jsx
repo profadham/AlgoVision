@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function Node({ id, colour, init_x, init_y }) {
+function Node({ id, colour, init_x, init_y, refProp }) {
   const [position, setPosition] = useState({
     x: init_x || 50,
     y: init_y || 50,
@@ -29,6 +29,7 @@ function Node({ id, colour, init_x, init_y }) {
   return (
     <>
       <circle
+        ref={refProp}
         cx={position.x}
         cy={position.y}
         r="40"
@@ -45,6 +46,7 @@ function Node({ id, colour, init_x, init_y }) {
         dy=".3em"
         fill="white"
         pointerEvents="none"
+        fontSize={20}
       >
         {id}
       </text>

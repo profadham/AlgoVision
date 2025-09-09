@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Board from "./components/Board";
 import Node from "./components/Node";
 import EdgeInput from "./components/EdgeInput";
+import Graph from "./components/Graph";
+import Edge from "./components/Edge";
 
 function App() {
   const [edgesText, setEdgesText] = useState("");
@@ -10,7 +12,11 @@ function App() {
   const edges = edgesText
     .split("\n")
     .map((line) => line.trim().split(" "))
-    .filter((pair) => pair.length === 2);
+    .filter((parts) => parts.length >= 2)
+    .map(([u, v, w]) => [u, v, w ? parseInt(w, 10) : 1]);
+
+  const nodeARef = useRef(null);
+  const nodeBRef = useRef(null);
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
@@ -25,10 +31,7 @@ function App() {
       {/* Right half */}
       <div style={{ width: "80%" }}>
         <Board>
-          <svg width="100%" height="100%" style={{ background: "#f4f4f4" }}>
-            <Node id="A" colour="blue" init_x={100} init_y={100} />
-            <Node id="B" colour="green" init_x={300} init_y={200} />
-          </svg>
+          <Graph edges={edges} />
         </Board>
       </div>
     </div>
