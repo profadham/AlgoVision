@@ -1,0 +1,11 @@
+.board {
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #e7d4d4; /* Optional: set a background */
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05); /* Optional: subtle shadow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
