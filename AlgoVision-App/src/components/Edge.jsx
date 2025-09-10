@@ -31,7 +31,7 @@ function Edge({ nodeARef, nodeBRef, weight = 1 }) {
 
   return (
     <>
-      <line {...line} stroke="black" strokeWidth="2" />
+      <line {...line} stroke="red" strokeWidth="2" />
       <text
         x={midX}
         y={midY}

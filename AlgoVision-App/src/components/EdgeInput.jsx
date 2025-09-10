@@ -9,9 +9,11 @@ function EdgeInput({ value, onChange }) {
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        rows={6}
+        rows={12}
         cols={30}
-        placeholder="Example:\nA B 2\nB C 5\nC D"
+        placeholder="Example:A B 2
+        B C 5
+        C D"
         style={{
           width: "80%",
           height: "80%",

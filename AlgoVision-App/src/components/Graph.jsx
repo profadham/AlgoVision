@@ -45,8 +45,8 @@ function Graph({ edges }) {
           key={id}
           id={id}
           colour="blue"
-          init_x={100 + i * 100} // arbitrary positions for now
-          init_y={200}
+          init_x={(100 + i * 100) % 1000}
+          init_y={(100 + i * 100) % 1000}
           refProp={nodeRefs[id]}
         />
       ))}

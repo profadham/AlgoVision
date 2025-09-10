@@ -32,7 +32,7 @@ function Node({ id, colour, init_x, init_y, refProp }) {
         ref={refProp}
         cx={position.x}
         cy={position.y}
-        r="40"
+        r="30"
         fill={colour}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
