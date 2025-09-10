@@ -1,15 +1,12 @@
+// Node.jsx
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-function Node({ id, colour, init_x, init_y, refProp, isVisited = false }) {
-  const [position, setPosition] = useState({
-    x: init_x || 50,
-    y: init_y || 50,
-  });
+function Node({ id, colour, x, y, onPositionChange, isVisited = false }) {
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
-    console.log("Dragging changed:", dragging);
+    console.log(`Dragging ${id}:`, dragging);
   }, [dragging]);
 
   const handleMouseDown = () => setDragging(true);
@@ -17,37 +14,33 @@ function Node({ id, colour, init_x, init_y, refProp, isVisited = false }) {
 
   const handleMouseMove = (e) => {
     if (!dragging) return;
-
     const svg = e.target.closest("svg");
     const rect = svg.getBoundingClientRect();
-
-    setPosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    const newX = e.clientX - rect.left;
+    const newY = e.clientY - rect.top;
+    onPositionChange(id, newX, newY);
   };
 
   return (
     <>
-      <circle
-        ref={refProp}
-        cx={position.x}
-        cy={position.y}
+      <motion.circle
+        cx={x}
+        cy={y}
         r="30"
         fill={colour}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
         style={{ cursor: "grab" }}
-        // animate={{
-        //   fill: isVisited ? "orange" : "blue",
-        //   scale: isVisited ? 1.2 : 1,
-        // }}
-        // transition={{ duration: 0.5 }}
+        animate={{
+          fill: isVisited ? "orange" : colour,
+          r: isVisited ? 35 : 30,
+        }}
+        transition={{ duration: 5 }}
       />
       <text
-        x={position.x}
-        y={position.y}
+        x={x}
+        y={y}
         textAnchor="middle"
         dy=".3em"
         fill="white"

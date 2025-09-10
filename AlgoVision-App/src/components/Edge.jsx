@@ -1,38 +1,25 @@
 // Edge.jsx
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 
-function Edge({ nodeARef, nodeBRef, weight = 1, is_visited = false }) {
-  const [line, setLine] = useState({ x1: 0, y1: 0, x2: 0, y2: 0 });
+function Edge({ from, to, weight = 1, is_visited = false }) {
+  if (!from || !to) return null; // ✅ safety check
 
-  useEffect(() => {
-    const update = () => {
-      if (nodeARef.current && nodeBRef.current) {
-        setLine({
-          x1: parseFloat(nodeARef.current.getAttribute("cx")),
-          y1: parseFloat(nodeARef.current.getAttribute("cy")),
-          x2: parseFloat(nodeBRef.current.getAttribute("cx")),
-          y2: parseFloat(nodeBRef.current.getAttribute("cy")),
-        });
-      }
-    };
-
-    let frameId;
-    const tick = () => {
-      update();
-      frameId = requestAnimationFrame(tick);
-    };
-    tick();
-
-    return () => cancelAnimationFrame(frameId);
-  }, [nodeARef, nodeBRef]);
-
-  const midX = (line.x1 + line.x2) / 2;
-  const midY = (line.y1 + line.y2) / 2;
+  const midX = (from.x + to.x) / 2;
+  const midY = (from.y + to.y) / 2;
 
   return (
     <>
-      <line {...line} stroke="red" strokeWidth="2" />
+      <motion.line
+        x1={from.x}
+        y1={from.y}
+        x2={to.x}
+        y2={to.y}
+        stroke={is_visited ? "orange" : "red"}
+        strokeWidth="2"
+        animate={{ stroke: is_visited ? "orange" : "red" }}
+        transition={{ duration: 5 }}
+      />
       <text
         x={midX}
         y={midY}
