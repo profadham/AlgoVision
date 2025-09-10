@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
-function Node({ id, colour, init_x, init_y, refProp }) {
+function Node({ id, colour, init_x, init_y, refProp, isVisited = false }) {
   const [position, setPosition] = useState({
     x: init_x || 50,
     y: init_y || 50,
@@ -38,6 +39,11 @@ function Node({ id, colour, init_x, init_y, refProp }) {
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
         style={{ cursor: "grab" }}
+        // animate={{
+        //   fill: isVisited ? "orange" : "blue",
+        //   scale: isVisited ? 1.2 : 1,
+        // }}
+        // transition={{ duration: 0.5 }}
       />
       <text
         x={position.x}

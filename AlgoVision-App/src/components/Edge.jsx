@@ -1,7 +1,8 @@
 // Edge.jsx
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
-function Edge({ nodeARef, nodeBRef, weight = 1 }) {
+function Edge({ nodeARef, nodeBRef, weight = 1, is_visited = false }) {
   const [line, setLine] = useState({ x1: 0, y1: 0, x2: 0, y2: 0 });
 
   useEffect(() => {

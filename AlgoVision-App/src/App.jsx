@@ -23,9 +23,9 @@ function App() {
       {/* Left half */}
       <div style={{ width: "30%", background: "#f4f4f4" }}>
         <EdgeInput value={edgesText} onChange={setEdgesText} />
-        <pre style={{ padding: "1rem", background: "#eee" }}>
+        {/* <pre style={{ padding: "1rem", background: "#eee" }}>
           Parsed edges: {JSON.stringify(edges)}
-        </pre>
+        </pre> */}
       </div>
 
       {/* Right half */}
