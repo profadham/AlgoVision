@@ -3,7 +3,15 @@ import React from "react";
 function EdgeInput({ value, onChange }) {
   return (
     <div style={{ padding: "1rem" }}>
-      <label style={{ display: "block", marginBottom: "0.5rem" }}>
+      <label
+        style={{
+          display: "block",
+          marginBottom: "0.5rem",
+          color: "white",
+          fontSize: "16px",
+          fontWeight: "bold",
+        }}
+      >
         Enter Edges (one per line, format: A B [weight]):
       </label>
       <textarea
@@ -20,6 +28,7 @@ function EdgeInput({ value, onChange }) {
           fontFamily: "monospace",
           borderRadius: "8px",
           padding: "0.5rem",
+          color: "#4d5feaff",
         }}
       />
     </div>

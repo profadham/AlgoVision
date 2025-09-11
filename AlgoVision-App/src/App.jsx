@@ -7,12 +7,16 @@ import Edge from "./components/Edge";
 import AdvanceBut from "./components/AdvanceBut";
 import ResetButton from "./components/ResetButton";
 import ChooseSourceBut from "./components/ChooseSourceBut";
+import DfsBut from "./components/DfsBut";
+import BfsBut from "./components/BfsBut";
+import DijkBut from "./components/DijkBut";
 
 function App() {
   const [edgesText, setEdgesText] = useState("");
   const [edges, setEdges] = useState([]); // ✅ edges state
   const [step, setStep] = useState(0);
   const [chooseSorceMode, setChooseSourceMode] = useState(false);
+  const [algorithm, setAlgorithm] = useState(1); //1-dfs,2-bfs,3-dijkstra
 
   useEffect(() => {
     // parse edges from text
@@ -36,7 +40,7 @@ function App() {
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       {/* Left half */}
-      <div style={{ width: "30%", background: "#f4f4f4" }}>
+      <div style={{ width: "30%", background: "#184ae2ff" }}>
         <EdgeInput value={edgesText} onChange={setEdgesText} />
         <AdvanceBut onClick={() => setStep(step + 1)} label="Advance" />
         <ResetButton
@@ -51,6 +55,27 @@ function App() {
           chooseSourceMode={chooseSorceMode}
           setChooseSourceMode={setChooseSourceMode}
         />
+        <DfsBut
+          onClick={() => {
+            alert("DFS clicked");
+            setAlgorithm(1);
+          }}
+          label=" DFS "
+        />
+        <BfsBut
+          onClick={() => {
+            alert("BFS clicked");
+            setAlgorithm(2);
+          }}
+          label=" BFS "
+        />
+        <DijkBut
+          onClick={() => {
+            alert("Dijkstra's clicked");
+            setAlgorithm(3);
+          }}
+          label=" Dijkstra's "
+        />
       </div>
 
       {/* Right half */}
@@ -62,6 +87,8 @@ function App() {
             setStep={setStep}
             chooseSourceMode={chooseSorceMode}
             setChooseSourceMode={setChooseSourceMode}
+            algorithm={algorithm}
+            setAlgorithm={setAlgorithm}
           />
         </Board>
       </div>

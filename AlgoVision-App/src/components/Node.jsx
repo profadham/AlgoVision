@@ -16,9 +16,9 @@ function Node({
   const [dragging, setDragging] = useState(false);
   const [source, setSource] = useState(false);
 
-  useEffect(() => {
-    console.log(`Dragging ${id}:`, dragging);
-  }, [dragging]);
+  // useEffect(() => {
+  //   console.log(`Dragging ${id}:`, dragging);
+  // }, [dragging]);
 
   const handleMouseDown = () => setDragging(true);
   const handleMouseUp = () => setDragging(false);

@@ -10,9 +10,12 @@ function Graph({
   setStep,
   chooseSourceMode = false,
   setChooseSourceMode,
+  algorithm = 1, //1-dfs,2-bfs,3-dijkstra
+  setAlgorithm,
 }) {
   //main controls
   const [sources, setSources] = useState(new Set());
+  // const [algorithm, setAlgorithm] = useState(1); //1-dfs,2-bfs,3-dijkstra
 
   // Build adjacency list
   const adjacency = useMemo(() => {
@@ -123,17 +126,56 @@ function Graph({
 
   //bfs controls
   const [bfsDist, setBfsDist] = useState({});
+  const [bfsOrder, setBfsOrder] = useState([]);
+  const [bfsOrderId, setBfsOrderId] = useState([]);
+
+  useEffect(() => {
+    setBfsDist({});
+    setBfsOrder([]);
+    setBfsOrderId([]);
+    console.log("BFS reset (step 0)");
+    const queue = [];
+
+    const localDist = {};
+    const localOrder = [];
+    // Initialize queue with all source nodes
+    sources.forEach((src) => {
+      queue.push(src);
+      localDist[src] = 0;
+      localOrder.push(src);
+    });
+    // Perform BFS
+    while (queue.length > 0) {
+      const node = queue.shift();
+      const neighbors = adjacency[node] || [];
+      for (const { node: neighbor } of neighbors) {
+        if (localDist[neighbor] === undefined) {
+          localDist[neighbor] = localDist[node] + 1;
+          localOrder.push(neighbor);
+          queue.push(neighbor);
+        }
+      }
+    }
+    setBfsDist(localDist);
+    setBfsOrder(localOrder);
+    setBfsOrderId(localOrder.map((n) => String(n)));
+    console.log("BFS computed order:", bfsOrderId);
+  }, [adjacency, nodes, sources]);
 
   //step effect
   useEffect(() => {
-    if (step > dfsOrder.length) setStep(0);
-    for (let i = 0; i < dfsOrder.length; i++) {
+    if (step > bfsOrder.length) setStep(0);
+    for (let i = 0; i < bfsOrder.length; i++) {
       if (i == step - 1) {
-        setVisitedNodes((prev) => ({ [dfsOrder[i]]: true }));
+        setVisitedNodes((prev) => ({ [bfsOrder[i]]: true }));
         break;
       }
     }
   }, [step]);
+
+  useEffect(() => {
+    console.log("Sources changed:", Array.from(sources));
+  }, [sources]);
 
   return (
     <svg width={width} height={height}>
@@ -143,7 +185,7 @@ function Graph({
         const to = positions[v];
         if (!from || !to) {
           // still useful to warn (but not crash)
-          console.warn(`Skipping edge ${u}-${v}, missing positions`);
+          // console.warn(`Skipping edge ${u}-${v}, missing positions`);
           return null;
         }
         return <Edge key={i} from={from} to={to} weight={w} />;
@@ -164,7 +206,6 @@ function Graph({
             chooseSourceMode={chooseSourceMode}
             setChooseSourceMode={setChooseSourceMode}
             onClick={() => {
-              console.log("Node nowwww clicked:", id);
               if (chooseSourceMode) {
                 setSources((prev) => {
                   const next = new Set(prev);
@@ -172,7 +213,6 @@ function Graph({
                   else next.add(id);
                   return next;
                 });
-                console.log("Sources now:", sources);
               }
             }}
           />

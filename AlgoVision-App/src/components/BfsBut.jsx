@@ -1,6 +1,6 @@
 import React from "react";
 
-function ResetButton({ onClick, label = "Reset" }) {
+function BfsBut({ onClick, label = " BFS " }) {
   return (
     <button
       onClick={onClick}
@@ -20,4 +20,4 @@ function ResetButton({ onClick, label = "Reset" }) {
     </button>
   );
 }
-export default ResetButton;
+export default BfsBut;
