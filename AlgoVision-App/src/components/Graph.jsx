@@ -1,8 +1,19 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, use } from "react";
 import Node from "./Node";
 import Edge from "./Edge";
 
-function Graph({ edges = [], width = "100%", height = "100%" }) {
+function Graph({
+  edges = [],
+  width = "100%",
+  height = "100%",
+  step = 0,
+  setStep,
+  chooseSourceMode = false,
+  setChooseSourceMode,
+}) {
+  //main controls
+  const [sources, setSources] = useState(new Set());
+
   // Build adjacency list
   const adjacency = useMemo(() => {
     const adj = {};
@@ -27,6 +38,10 @@ function Graph({ edges = [], width = "100%", height = "100%" }) {
 
   // positions: { id: { x, y } }
   const [positions, setPositions] = useState({});
+
+  useEffect(() => {
+    console.log("Graph step changed:", step);
+  }, [step]);
 
   // Initialize or add missing nodes whenever nodes change
   useEffect(() => {
@@ -63,6 +78,63 @@ function Graph({ edges = [], width = "100%", height = "100%" }) {
     setPositions((prev) => ({ ...prev, [id]: { x, y } }));
   };
 
+  //dfs controls
+  const [visited, setVisited] = useState(new Set());
+  const [dfsOrder, setDfsOrder] = useState([]);
+  const [dfsOrderId, setDfsOrderId] = useState([]);
+
+  useEffect(() => {
+    // If step is 0 we want to reset visited / order
+    setVisited(new Set());
+    setDfsOrder([]);
+    console.log("DFS reset (step 0)");
+
+    // local structures (do NOT mutate React state directly)
+    const localVisited = new Set();
+    const localOrder = [];
+    console.log("eh");
+    // recursive DFS using localVisited and localOrder
+    const dfs = (node) => {
+      if (localVisited.has(node)) return;
+      localVisited.add(node);
+      localOrder.push(node);
+
+      const neighbors = adjacency[node] || [];
+      for (const { node: neighbor } of neighbors) {
+        if (!localVisited.has(neighbor)) dfs(neighbor);
+      }
+    };
+
+    // Run DFS for each component (deterministic order from nodes array)
+    for (const node of nodes) {
+      console.log("Starting DFS at node:", node);
+      if (!localVisited.has(node)) dfs(node);
+    }
+
+    // commit local results to React state (one update)
+    setVisited(localVisited);
+    setDfsOrder(localOrder);
+    setDfsOrderId(localOrder.map((n) => String(n)));
+    // Log the result (log localOrder — this is reliable)
+    console.log("DFS computed order:", dfsOrderId);
+  }, [adjacency, nodes]);
+
+  const [visitedNodes, setVisitedNodes] = useState({});
+
+  //bfs controls
+  const [bfsDist, setBfsDist] = useState({});
+
+  //step effect
+  useEffect(() => {
+    if (step > dfsOrder.length) setStep(0);
+    for (let i = 0; i < dfsOrder.length; i++) {
+      if (i == step - 1) {
+        setVisitedNodes((prev) => ({ [dfsOrder[i]]: true }));
+        break;
+      }
+    }
+  }, [step]);
+
   return (
     <svg width={width} height={height}>
       {/* Render edges — skip if positions missing (but we log once) */}
@@ -88,6 +160,21 @@ function Graph({ edges = [], width = "100%", height = "100%" }) {
             x={pos.x}
             y={pos.y}
             onPositionChange={updatePosition}
+            isVisited={!!visitedNodes[id]}
+            chooseSourceMode={chooseSourceMode}
+            setChooseSourceMode={setChooseSourceMode}
+            onClick={() => {
+              console.log("Node nowwww clicked:", id);
+              if (chooseSourceMode) {
+                setSources((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+                console.log("Sources now:", sources);
+              }
+            }}
           />
         );
       })}

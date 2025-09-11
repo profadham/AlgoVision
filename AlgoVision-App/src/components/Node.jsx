@@ -2,8 +2,19 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-function Node({ id, colour, x, y, onPositionChange, isVisited = false }) {
+function Node({
+  id,
+  colour,
+  x,
+  y,
+  onPositionChange,
+  isVisited = false,
+  chooseSourceMode = false,
+  setChooseSourceMode,
+  onClick,
+}) {
   const [dragging, setDragging] = useState(false);
+  const [source, setSource] = useState(false);
 
   useEffect(() => {
     console.log(`Dragging ${id}:`, dragging);
@@ -21,6 +32,17 @@ function Node({ id, colour, x, y, onPositionChange, isVisited = false }) {
     onPositionChange(id, newX, newY);
   };
 
+  const handleClick = () => {
+    if (chooseSourceMode) {
+      console.log(`Node ${id} clicked`);
+      // alert(`Source node chosen: ${id}`);
+      setSource(!source);
+    }
+    if (typeof onClick === "function") {
+      onClick();
+    }
+  };
+
   return (
     <>
       <motion.circle
@@ -28,12 +50,13 @@ function Node({ id, colour, x, y, onPositionChange, isVisited = false }) {
         cy={y}
         r="30"
         fill={colour}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
+        onMouseDown={chooseSourceMode ? null : handleMouseDown}
+        onMouseUp={chooseSourceMode ? null : handleMouseUp}
+        onClick={handleClick}
+        onMouseMove={chooseSourceMode ? null : handleMouseMove}
         style={{ cursor: "grab" }}
         animate={{
-          fill: isVisited ? "orange" : colour,
+          fill: isVisited ? "orange" : source ? "red" : colour,
           r: isVisited ? 35 : 30,
         }}
         transition={{ duration: 5 }}

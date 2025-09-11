@@ -15,7 +15,7 @@ function EdgeInput({ value, onChange }) {
         B C 5
         C D"
         style={{
-          width: "80%",
+          width: "90%",
           height: "80%",
           fontFamily: "monospace",
           borderRadius: "8px",
