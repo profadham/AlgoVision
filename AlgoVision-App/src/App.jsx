@@ -23,6 +23,18 @@ function App() {
   useEffect(() => {
     document.title = "AlgoVision";
 
+    // safe PUBLIC_URL detection (works in CRA and in other setups)
+    const publicUrl =
+      typeof process !== "undefined" &&
+      process &&
+      process.env &&
+      process.env.PUBLIC_URL
+        ? process.env.PUBLIC_URL
+        : "";
+
+    // prefer a cache-busted URL while developing
+    const faviconPath = `${publicUrl}/favicon.ico?v=${Date.now()}`;
+
     const setFavicon = (url) => {
       let link = document.querySelector("link[rel*='icon']");
       if (!link) {
@@ -33,10 +45,12 @@ function App() {
       link.href = url;
     };
 
-    // If your favicon is at public/favicon.ico, this will work in CRA:
-    setFavicon(`${process.env.PUBLIC_URL || ""}/favicon.ico`);
+    // Try the candidate and fallback to a plain relative path if needed.
+    // (Don't await fetch here unless you want to verify the file exists.)
+    setFavicon(faviconPath);
 
-    // cleanup: optional — leave as is so favicon stays
+    // optional: cleanup - not necessary
+    // return () => { /* no cleanup needed */ };
   }, []);
 
   // <-- Replace this with your repo URL -->
