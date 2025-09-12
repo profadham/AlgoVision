@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, use } from "react";
 import Board from "./components/Board";
 import Node from "./components/Node";
 import EdgeInput from "./components/EdgeInput";
@@ -37,6 +37,10 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [edgesText]);
 
+  // useffect(() => {
+  //   console.log("algorithm changed:", algorithm);
+  // }, [algorithm]);
+
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       {/* Left half */}
@@ -56,6 +60,7 @@ function App() {
           setChooseSourceMode={setChooseSourceMode}
         />
         <DfsBut
+          backgroundColor={algorithm === 1 ? "#e81a43ff" : "#2d5fdeff"}
           onClick={() => {
             alert("DFS clicked");
             setAlgorithm(1);
@@ -63,6 +68,7 @@ function App() {
           label=" DFS "
         />
         <BfsBut
+          backgroundColor={algorithm === 2 ? "#e81a43ff" : "#2d5fdeff"}
           onClick={() => {
             alert("BFS clicked");
             setAlgorithm(2);
@@ -70,6 +76,7 @@ function App() {
           label=" BFS "
         />
         <DijkBut
+          backgroundColor={algorithm === 3 ? "#e81a43ff" : "#2d5fdeff"}
           onClick={() => {
             alert("Dijkstra's clicked");
             setAlgorithm(3);

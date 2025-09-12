@@ -12,9 +12,11 @@ function Node({
   chooseSourceMode = false,
   setChooseSourceMode,
   onClick,
+  source = false,
+  distance = Infinity,
 }) {
   const [dragging, setDragging] = useState(false);
-  const [source, setSource] = useState(false);
+  // const [source, setSource] = useState(false);
 
   // useEffect(() => {
   //   console.log(`Dragging ${id}:`, dragging);
@@ -32,17 +34,6 @@ function Node({
     onPositionChange(id, newX, newY);
   };
 
-  const handleClick = () => {
-    if (chooseSourceMode) {
-      console.log(`Node ${id} clicked`);
-      // alert(`Source node chosen: ${id}`);
-      setSource(!source);
-    }
-    if (typeof onClick === "function") {
-      onClick();
-    }
-  };
-
   return (
     <>
       <motion.circle
@@ -52,9 +43,9 @@ function Node({
         fill={colour}
         onMouseDown={chooseSourceMode ? null : handleMouseDown}
         onMouseUp={chooseSourceMode ? null : handleMouseUp}
-        onClick={handleClick}
         onMouseMove={chooseSourceMode ? null : handleMouseMove}
         style={{ cursor: "grab" }}
+        onClick={onClick}
         animate={{
           fill: isVisited ? "orange" : source ? "red" : colour,
           r: isVisited ? 35 : 30,
@@ -71,6 +62,19 @@ function Node({
         fontSize={20}
       >
         {id}
+      </text>
+
+      <text
+        x={x + 40} // 40px to the right of the circle
+        y={y}
+        textAnchor="start"
+        dy=".3em"
+        fill="#daf110ff"
+        fontSize={16}
+        fontWeight="bold"
+        pointerEvents="none"
+      >
+        {distance === Infinity ? "∞" : distance}
       </text>
     </>
   );

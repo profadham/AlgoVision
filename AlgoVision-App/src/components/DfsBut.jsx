@@ -1,13 +1,13 @@
 import React from "react";
 
-function DfsBut({ onClick, label = " DFS " }) {
+function DfsBut({ onClick, label = " DFS ", backgroundColor = "#2d5fdeff" }) {
   return (
     <button
       onClick={onClick}
       style={{
         padding: "10px 20px",
         fontSize: "16px",
-        backgroundColor: "#2d5fdeff",
+        backgroundColor: backgroundColor,
         color: "white",
         border: "none",
         borderRadius: "5px",

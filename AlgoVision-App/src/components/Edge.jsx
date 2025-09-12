@@ -2,7 +2,14 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-function Edge({ from, to, weight = 1, is_visited = false }) {
+function Edge({
+  from,
+  to,
+  weight = 1,
+  is_visited = false,
+  algorithm = 1,
+  setAlgorithm,
+}) {
   if (!from || !to) return null; // ✅ safety check
 
   const midX = (from.x + to.x) / 2;
@@ -29,6 +36,7 @@ function Edge({ from, to, weight = 1, is_visited = false }) {
         fill="black"
         fontWeight="bold"
         style={{ userSelect: "none" }}
+        opacity={algorithm === 3 ? 1 : 0} // Show weight only for Dijkstra's
       >
         {weight}
       </text>

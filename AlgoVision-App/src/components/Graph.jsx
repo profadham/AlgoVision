@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, use } from "react";
 import Node from "./Node";
 import Edge from "./Edge";
+import { MinPriorityQueue } from "@datastructures-js/priority-queue";
 
 function Graph({
   edges = [],
@@ -15,6 +16,7 @@ function Graph({
 }) {
   //main controls
   const [sources, setSources] = useState(new Set());
+  const [sourceNodes, setSourceNodes] = useState({});
   // const [algorithm, setAlgorithm] = useState(1); //1-dfs,2-bfs,3-dijkstra
 
   // Build adjacency list
@@ -41,10 +43,6 @@ function Graph({
 
   // positions: { id: { x, y } }
   const [positions, setPositions] = useState({});
-
-  useEffect(() => {
-    console.log("Graph step changed:", step);
-  }, [step]);
 
   // Initialize or add missing nodes whenever nodes change
   useEffect(() => {
@@ -90,12 +88,10 @@ function Graph({
     // If step is 0 we want to reset visited / order
     setVisited(new Set());
     setDfsOrder([]);
-    console.log("DFS reset (step 0)");
 
     // local structures (do NOT mutate React state directly)
     const localVisited = new Set();
     const localOrder = [];
-    console.log("eh");
     // recursive DFS using localVisited and localOrder
     const dfs = (node) => {
       if (localVisited.has(node)) return;
@@ -110,7 +106,6 @@ function Graph({
 
     // Run DFS for each component (deterministic order from nodes array)
     for (const node of nodes) {
-      console.log("Starting DFS at node:", node);
       if (!localVisited.has(node)) dfs(node);
     }
 
@@ -119,7 +114,6 @@ function Graph({
     setDfsOrder(localOrder);
     setDfsOrderId(localOrder.map((n) => String(n)));
     // Log the result (log localOrder — this is reliable)
-    console.log("DFS computed order:", dfsOrderId);
   }, [adjacency, nodes]);
 
   const [visitedNodes, setVisitedNodes] = useState({});
@@ -133,17 +127,18 @@ function Graph({
     setBfsDist({});
     setBfsOrder([]);
     setBfsOrderId([]);
-    console.log("BFS reset (step 0)");
     const queue = [];
 
     const localDist = {};
     const localOrder = [];
     // Initialize queue with all source nodes
-    sources.forEach((src) => {
-      queue.push(src);
-      localDist[src] = 0;
-      localOrder.push(src);
-    });
+    for (const id of Object.keys(sourceNodes)) {
+      if (sourceNodes[id]) {
+        queue.push(id);
+        localDist[id] = 0;
+        localOrder.push(id);
+      }
+    }
     // Perform BFS
     while (queue.length > 0) {
       const node = queue.shift();
@@ -159,23 +154,105 @@ function Graph({
     setBfsDist(localDist);
     setBfsOrder(localOrder);
     setBfsOrderId(localOrder.map((n) => String(n)));
-    console.log("BFS computed order:", bfsOrderId);
-  }, [adjacency, nodes, sources]);
+  }, [adjacency, nodes, sourceNodes]);
+
+  //dijkstra controls
+  const [dijkDist, setDijkDist] = useState({});
+  const [dijkOrder, setDijkOrder] = useState([]);
+  const [dijkOrderId, setDijkOrderId] = useState([]);
+
+  useEffect(() => {
+    setDijkDist({});
+    setDijkOrder([]);
+    setDijkOrderId([]);
+    const pq = new MinPriorityQueue((x) => x.dist);
+    const localDist = {};
+    const localOrder = [];
+    // Initialize pq with all source nodes
+    for (const id of Object.keys(sourceNodes)) {
+      if (sourceNodes[id]) {
+        pq.enqueue({ id, dist: 0 });
+        localDist[id] = 0;
+        localOrder.push(id);
+      }
+    }
+    // Perform Dijkstra
+    while (!pq.isEmpty()) {
+      const { id: node } = pq.dequeue();
+      const neighbors = adjacency[node] || [];
+      for (const { node: neighbor, weight } of neighbors) {
+        const newDist = localDist[node] + (weight || 1);
+        if (
+          localDist[neighbor] === undefined ||
+          newDist < localDist[neighbor]
+        ) {
+          localDist[neighbor] = newDist;
+          localOrder.push(neighbor);
+          pq.enqueue({ id: neighbor, dist: newDist });
+        }
+      }
+    }
+    setDijkDist(localDist);
+    setDijkOrder(localOrder);
+    setDijkOrderId(localOrder.map((n) => String(n)));
+  }, [adjacency, nodes, sourceNodes]);
 
   //step effect
   useEffect(() => {
-    if (step > bfsOrder.length) setStep(0);
-    for (let i = 0; i < bfsOrder.length; i++) {
-      if (i == step - 1) {
-        setVisitedNodes((prev) => ({ [bfsOrder[i]]: true }));
-        break;
+    if (algorithm === 1) {
+      if (step > dfsOrder.length) setStep(0);
+      for (let i = 0; i < dfsOrder.length; i++) {
+        if (i == step - 1) {
+          setVisitedNodes((prev) => ({ [dfsOrder[i]]: true }));
+          break;
+        }
+      }
+    } else if (algorithm === 2) {
+      if (step > bfsOrder.length) setStep(0);
+      for (let i = 0; i < bfsOrder.length; i++) {
+        if (i == step - 1) {
+          setVisitedNodes((prev) => ({ [bfsOrder[i]]: true }));
+          break;
+        }
+      }
+    } else if (algorithm === 3) {
+      if (step > dijkOrder.length) setStep(0);
+      for (let i = 0; i < dijkOrder.length; i++) {
+        if (i == step - 1) {
+          setVisitedNodes((prev) => ({ [dijkOrder[i]]: true }));
+          break;
+        }
       }
     }
   }, [step]);
 
   useEffect(() => {
-    console.log("Sources changed:", Array.from(sources));
-  }, [sources]);
+    for (const [id, src] of Object.entries(sourceNodes)) {
+      if (!nodes.includes(id) && src) {
+        setSourceNodes((prev) => ({ ...prev, [id]: false }));
+      }
+    }
+  }, [nodes]);
+
+  useEffect(() => {
+    setStep(0);
+    // Reset visited nodes
+    setVisitedNodes({});
+    // Clear all source nodes
+    for (const id of Object.keys(sourceNodes)) {
+      setSourceNodes((prev) => ({ ...prev, [id]: false }));
+    }
+  }, [algorithm]);
+
+  useEffect(() => {
+    console.log("DfsOrder:", dfsOrder);
+  }, [dfsOrder]);
+  useEffect(() => {
+    console.log("BfsOrder:", bfsOrder);
+  }, [bfsOrder]);
+  useEffect(() => {
+    console.log("DijkOrder:", dijkOrder);
+  }, [dijkOrder]);
 
   return (
     <svg width={width} height={height}>
@@ -188,7 +265,16 @@ function Graph({
           // console.warn(`Skipping edge ${u}-${v}, missing positions`);
           return null;
         }
-        return <Edge key={i} from={from} to={to} weight={w} />;
+        return (
+          <Edge
+            key={i}
+            from={from}
+            to={to}
+            weight={w}
+            algorithm={algorithm}
+            setAlgorithm={setAlgorithm}
+          />
+        );
       })}
 
       {/* Render nodes. Use a safe fallback position to avoid runtime errors */}
@@ -205,6 +291,16 @@ function Graph({
             isVisited={!!visitedNodes[id]}
             chooseSourceMode={chooseSourceMode}
             setChooseSourceMode={setChooseSourceMode}
+            source={!!sourceNodes[id]}
+            distance={
+              algorithm === 2 && bfsDist[id] !== undefined
+                ? bfsDist[id]
+                : algorithm === 3 && dijkDist[id] !== undefined
+                ? dijkDist[id]
+                : algorithm === 1 && dfsOrderId.indexOf(id) !== -1
+                ? dfsOrderId.indexOf(id)
+                : Infinity
+            }
             onClick={() => {
               if (chooseSourceMode) {
                 setSources((prev) => {
@@ -213,6 +309,7 @@ function Graph({
                   else next.add(id);
                   return next;
                 });
+                setSourceNodes((prev) => ({ ...prev, [id]: !prev[id] }));
               }
             }}
           />
