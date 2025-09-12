@@ -33,7 +33,7 @@ function ChooseSourceBut({
           color: "white",
           fontSize: "16px",
           fontWeight: "bold",
-          padding: "1rem",
+          padding: "8px 16px",
           opacity: chooseSourceMode ? 1 : 0,
         }}
       >
@@ -46,7 +46,7 @@ function ChooseSourceBut({
           color: "white",
           fontSize: "16px",
           fontWeight: "bold",
-          padding: "1rem",
+          padding: "8px 16px",
           opacity: chooseSourceMode ? 1 : 0,
         }}
       >

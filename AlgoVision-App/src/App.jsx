@@ -20,6 +20,9 @@ function App() {
   const [widthPx, setWidthPx] = useState(0);
   const [heightPx, setHeightPx] = useState(0);
 
+  // <-- Replace this with your repo URL -->
+  const repoUrl = "https://github.com/profadham/AlgoVision";
+
   useEffect(() => {
     // parse edges from text (robust to extra spaces/tabs, ignore blank lines / comments)
     const parsed = edgesText
@@ -28,43 +31,47 @@ function App() {
       .filter((line) => line && !line.startsWith("#")) // skip empty / commented lines
       .map((line) => {
         // split on any whitespace (one or more spaces/tabs), returns only non-empty tokens
-        const parts = line.split(/\s+/); // or: const parts = line.match(/\S+/g) || [];
+        const parts = line.split(/\s+/);
 
-        // require at least 2 tokens (u and v)
         if (parts.length < 2) return null;
 
         const u = parts[0];
         const v = parts[1];
 
-        // parse weight if provided, otherwise default to 1
         const wToken = parts[2];
         const wNum = wToken !== undefined ? parseInt(wToken, 10) : 1;
         const weight = Number.isFinite(wNum) ? wNum : 1;
 
         return [u, v, weight];
       })
-      .filter(Boolean); // remove nulls from invalid lines
+      .filter(Boolean);
 
-    // stringify for stable comparison
     const prev = JSON.stringify(edges);
     const next = JSON.stringify(parsed);
 
     if (prev !== next) {
       setEdges(parsed);
-      setStep(0); // reset step only if edges truly changed
+      setStep(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [edgesText]);
 
-  // useffect(() => {
-  //   console.log("algorithm changed:", algorithm);
-  // }, [algorithm]);
-
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       {/* Left half */}
-      <div style={{ width: "30%", background: "#184ae2ff" }}>
+      <div style={{ width: "30%", background: "#184ae2ff", paddingBottom: 24 }}>
         <EdgeInput value={edgesText} onChange={setEdgesText} />
+        <label
+          style={{
+            display: "block",
+            color: "white",
+            fontSize: "16px",
+            fontWeight: "bold",
+            padding: "8px 16px",
+          }}
+        >
+          Press (Advance) to Advance Algorithm Step by Step:
+        </label>
         <AdvanceBut onClick={() => setStep(step + 1)} label="Advance" />
         <ResetButton
           onClick={() => {
@@ -85,7 +92,7 @@ function App() {
             color: "white",
             fontSize: "20px",
             fontWeight: "bold",
-            padding: "1rem",
+            padding: "8px 16px",
           }}
         >
           Choose Algorithm:
@@ -111,6 +118,75 @@ function App() {
           }}
           label=" Dijkstra's "
         />
+        {/* Separator + GitHub button (line = 100% of parent) */}
+        <div
+          style={{
+            padding: "1rem",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "stretch", // allow the separator to fill the parent width
+          }}
+        >
+          {/* separator line at full width of this parent */}
+          <div
+            style={{
+              width: "95%",
+              height: "1px",
+              background: "rgba(255, 255, 255, 1)",
+              height: "4px",
+              borderRadius: 1,
+            }}
+            aria-hidden="true"
+          />
+        </div>
+        {/* GitHub button: use exactly same sizing/margins as other buttons */}
+        <a
+          href={repoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open project on GitHub"
+          role="button"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            textDecoration: "none",
+
+            /* === MATCH other button styles === */
+            padding: "10px 20px",
+            fontSize: "16px",
+            backgroundColor: "#2d5fdeff",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            margin: "10px",
+            width: "90%",
+            boxSizing: "border-box",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.12)",
+          }}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+            style={{ flex: "0 0 20px" }}
+          >
+            <path
+              fill="white"
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+      0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+      0-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+      0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.68 7.68 0 0 1 8 4.8c.68.003 1.36.092 2
+      .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65
+      3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+            />
+          </svg>
+
+          <span style={{ fontWeight: 700 }}>View on GitHub</span>
+        </a>
       </div>
 
       {/* Right half */}
