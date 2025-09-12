@@ -3,17 +3,20 @@
 **AlgoVision** — an interactive algorithm visualizer for graph traversals (DFS, BFS) and shortest paths (Dijkstra).  
 Build, tinker, and visualize how graph algorithms explore nodes and edges step-by-step.
 
-Try it now!: **https://algo-vision-alpha.vercel.app/**
+#### Try it now!: **https://algo-vision-alpha.vercel.app/**
 
 ---
 
 ## Preview
 ### adding edges to build graph
 <img src="docs/s2.png" alt="screenshot" width="600" height="300" />
+
 ### walking through the algorithm step by step
 <img src="docs/s3.png" alt="screenshot" width="600" height="300" />
+
 ### shortest distance to all nodes calculated
 <img src="docs/s4.png" alt="screenshot" width="600" height="300" />
+
 ### ability to choose whichever source nodes you want
 <img src="docs/s5.png" alt="screenshot" width="600" height="300" />
 
