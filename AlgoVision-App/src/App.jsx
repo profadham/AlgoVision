@@ -20,6 +20,25 @@ function App() {
   const [widthPx, setWidthPx] = useState(0);
   const [heightPx, setHeightPx] = useState(0);
 
+  useEffect(() => {
+    document.title = "AlgoVision";
+
+    const setFavicon = (url) => {
+      let link = document.querySelector("link[rel*='icon']");
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      link.href = url;
+    };
+
+    // If your favicon is at public/favicon.ico, this will work in CRA:
+    setFavicon(`${process.env.PUBLIC_URL || ""}/favicon.ico`);
+
+    // cleanup: optional — leave as is so favicon stays
+  }, []);
+
   // <-- Replace this with your repo URL -->
   const repoUrl = "https://github.com/profadham/AlgoVision";
 
