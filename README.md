@@ -16,7 +16,6 @@ Live demo: **https://algo-vision-alpha.vercel.app/** ← _replace with your Verc
 <img src="docs/s4.png" alt="screenshot" width="600" height="300" />
 ### ability to choose whichever source nodes you want
 <img src="docs/s5.png" alt="screenshot" width="600" height="300" />
-*(Add `docs/screenshot.png` or replace with your screenshot path)*
 
 ---
 
