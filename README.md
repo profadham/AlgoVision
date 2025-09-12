@@ -9,7 +9,7 @@ Live demo: **https://algo-vision-alpha.vercel.app/** ← _replace with your Verc
 
 ## Preview
 
-![screenshot](./docs/screenshot.png)  
+![screenshot](./docs/s2.png)  
 *(Add `docs/screenshot.png` or replace with your screenshot path)*
 
 ---
