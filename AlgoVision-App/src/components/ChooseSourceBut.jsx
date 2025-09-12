@@ -5,34 +5,52 @@ function ChooseSourceBut({
   label = "Choose Source",
   chooseSourceMode = false,
   setChooseSourceMode,
+  algorithm,
 }) {
   return (
     <>
       <button
         onClick={onClick}
+        disabled={algorithm === 1}
         style={{
           padding: "10px 20px",
           fontSize: "16px",
-          backgroundColor: "#2d5fdeff",
+          backgroundColor: chooseSourceMode ? "red" : "#2d5fdeff",
           color: "white",
           border: "none",
           borderRadius: "5px",
           cursor: "pointer",
           margin: "10px",
-          width: chooseSourceMode ? "95%" : "90%",
+          width: "90%",
         }}
       >
         {label}
       </button>
       <label
         style={{
-          color: "black",
-          fontSize: "14px",
+          display: "block",
+          // marginBottom: "0.1rem",
+          color: "white",
+          fontSize: "16px",
+          fontWeight: "bold",
+          padding: "1rem",
           opacity: chooseSourceMode ? 1 : 0,
         }}
       >
-        You are now in choosing sources mode!! Press Button again to disable
-        mode!!
+        You are now in choosing sources mode!!
+      </label>
+      <label
+        style={{
+          display: "block",
+          marginBottom: "0.1rem",
+          color: "white",
+          fontSize: "16px",
+          fontWeight: "bold",
+          padding: "1rem",
+          opacity: chooseSourceMode ? 1 : 0,
+        }}
+      >
+        Press Button again to disable mode!!
       </label>
     </>
   );

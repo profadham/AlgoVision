@@ -22,9 +22,9 @@ function Edge({
         y1={from.y}
         x2={to.x}
         y2={to.y}
-        stroke={is_visited ? "orange" : "red"}
-        strokeWidth="2"
-        animate={{ stroke: is_visited ? "orange" : "red" }}
+        stroke={is_visited ? "#8b0de4" : "red"}
+        strokeWidth="4"
+        animate={{ stroke: is_visited ? "#8b0de4" : "red" }}
         transition={{ duration: 5 }}
       />
       <text

@@ -17,14 +17,33 @@ function App() {
   const [step, setStep] = useState(0);
   const [chooseSorceMode, setChooseSourceMode] = useState(false);
   const [algorithm, setAlgorithm] = useState(1); //1-dfs,2-bfs,3-dijkstra
+  const [widthPx, setWidthPx] = useState(0);
+  const [heightPx, setHeightPx] = useState(0);
 
   useEffect(() => {
-    // parse edges from text
+    // parse edges from text (robust to extra spaces/tabs, ignore blank lines / comments)
     const parsed = edgesText
-      .split("\n")
-      .map((line) => line.trim().split(" "))
-      .filter((parts) => parts.length >= 2)
-      .map(([u, v, w]) => [u, v, w ? parseInt(w, 10) : 1]);
+      .split(/\r?\n/) // split into lines (handles CRLF + LF)
+      .map((line) => line.trim()) // trim each line
+      .filter((line) => line && !line.startsWith("#")) // skip empty / commented lines
+      .map((line) => {
+        // split on any whitespace (one or more spaces/tabs), returns only non-empty tokens
+        const parts = line.split(/\s+/); // or: const parts = line.match(/\S+/g) || [];
+
+        // require at least 2 tokens (u and v)
+        if (parts.length < 2) return null;
+
+        const u = parts[0];
+        const v = parts[1];
+
+        // parse weight if provided, otherwise default to 1
+        const wToken = parts[2];
+        const wNum = wToken !== undefined ? parseInt(wToken, 10) : 1;
+        const weight = Number.isFinite(wNum) ? wNum : 1;
+
+        return [u, v, weight];
+      })
+      .filter(Boolean); // remove nulls from invalid lines
 
     // stringify for stable comparison
     const prev = JSON.stringify(edges);
@@ -32,7 +51,7 @@ function App() {
 
     if (prev !== next) {
       setEdges(parsed);
-      setStep(0); // ✅ reset step only if edges truly changed
+      setStep(0); // reset step only if edges truly changed
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [edgesText]);
@@ -58,11 +77,22 @@ function App() {
           onClick={() => setChooseSourceMode(!chooseSorceMode)}
           chooseSourceMode={chooseSorceMode}
           setChooseSourceMode={setChooseSourceMode}
+          algorithm={algorithm}
         />
+        <label
+          style={{
+            display: "block",
+            color: "white",
+            fontSize: "20px",
+            fontWeight: "bold",
+            padding: "1rem",
+          }}
+        >
+          Choose Algorithm:
+        </label>
         <DfsBut
           backgroundColor={algorithm === 1 ? "#e81a43ff" : "#2d5fdeff"}
           onClick={() => {
-            alert("DFS clicked");
             setAlgorithm(1);
           }}
           label=" DFS "
@@ -70,7 +100,6 @@ function App() {
         <BfsBut
           backgroundColor={algorithm === 2 ? "#e81a43ff" : "#2d5fdeff"}
           onClick={() => {
-            alert("BFS clicked");
             setAlgorithm(2);
           }}
           label=" BFS "
@@ -78,7 +107,6 @@ function App() {
         <DijkBut
           backgroundColor={algorithm === 3 ? "#e81a43ff" : "#2d5fdeff"}
           onClick={() => {
-            alert("Dijkstra's clicked");
             setAlgorithm(3);
           }}
           label=" Dijkstra's "
@@ -87,7 +115,12 @@ function App() {
 
       {/* Right half */}
       <div style={{ width: "80%" }}>
-        <Board>
+        <Board
+          setWidthPx={setWidthPx}
+          widthPx={widthPx}
+          setHeightPx={setHeightPx}
+          heightPx={heightPx}
+        >
           <Graph
             edges={edges}
             step={step}
@@ -96,6 +129,8 @@ function App() {
             setChooseSourceMode={setChooseSourceMode}
             algorithm={algorithm}
             setAlgorithm={setAlgorithm}
+            widthPx={widthPx}
+            heightPx={heightPx}
           />
         </Board>
       </div>
