@@ -92,8 +92,8 @@ function App() {
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       {/* Left half */}
-      {/* <div style={{ width: "30%", background: "#184ae2ff", paddingBottom: 24 }}> */}
-        <div style={{ width: "30%", background: "#ffffffff", paddingBottom: 24 }}>
+      <div style={{ width: "30%", background: "#184ae2ff", paddingBottom: 10 }}>
+        {/* <div style={{ width: "30%", background: "#ffffffff", paddingBottom: 10 }}> */}
         <EdgeInput value={edgesText} onChange={setEdgesText} />
         <label
           style={{
