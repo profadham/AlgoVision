@@ -90,7 +90,7 @@ function App() {
   }, [edgesText]);
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div style={{ display: "flex", height: "100%" }}>
       {/* Left half */}
       <div style={{ width: "30%", background: "#184ae2ff", paddingBottom: 24 }}>
         <EdgeInput value={edgesText} onChange={setEdgesText} />
