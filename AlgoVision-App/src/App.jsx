@@ -224,7 +224,7 @@ function App() {
       </div>
 
       {/* Right half */}
-      <div style={{ width: "80%" }}>
+      <div style={{ width: "80%", height: "100%" }}>
         <Board
           setWidthPx={setWidthPx}
           widthPx={widthPx}
