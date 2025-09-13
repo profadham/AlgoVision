@@ -2,7 +2,7 @@
   top: 0;
   right: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   background: #4892e0; /* Optional: set a background */
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05); /* Optional: subtle shadow */
   display: flex;
