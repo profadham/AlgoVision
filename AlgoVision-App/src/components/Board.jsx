@@ -27,7 +27,7 @@ function Board({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   return (
-    <div className="board" ref={ref}>
+    <div className="board" ref={ref} style={{height:"100%"}}>
       {children}
     </div>
   );
