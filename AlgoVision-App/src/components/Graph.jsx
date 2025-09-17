@@ -52,7 +52,8 @@ function Graph({
   // Refs to expose d3 simulation and nodes to drag handlers
   const simulationRef = useRef(null);
   const d3NodesRef = useRef([]);
-  const dragStateRef = useRef({ component: new Set(), lastMouse: null });
+  // dragState will now store the dragged node id + last mouse
+  const dragStateRef = useRef({ draggedId: null, lastMouse: null });
 
   useEffect(() => {
     if (!nodes || nodes.length === 0) return;
@@ -417,19 +418,20 @@ function Graph({
 
   // Drag handlers called from Node (client coords)
   const handleDragStart = (id, clientX, clientY) => {
-    const comp = getComponent(id);
+    // mark which node is being dragged, but DO NOT fix the whole component
     dragStateRef.current = {
-      component: comp,
+      draggedId: String(id),
       lastMouse: { x: clientX, y: clientY },
     };
     const sim = simulationRef.current;
     if (sim) {
       sim.alphaTarget(0.3).restart();
-      // fix the nodes currently in the component so they move with us
+      // fix only the dragged node so neighbors are pulled by the link force
       for (const n of d3NodesRef.current) {
-        if (comp.has(String(n.id))) {
+        if (String(n.id) === String(id)) {
           n.fx = n.x;
           n.fy = n.y;
+          break;
         }
       }
     }
@@ -437,28 +439,27 @@ function Graph({
 
   const handleDrag = (id, clientX, clientY) => {
     const ds = dragStateRef.current;
-    if (!ds.lastMouse) return;
+    if (!ds.lastMouse || ds.draggedId !== String(id)) return;
     const dx = clientX - ds.lastMouse.x;
     const dy = clientY - ds.lastMouse.y;
     ds.lastMouse = { x: clientX, y: clientY };
 
-    // move all fixed nodes in the component
+    // move only the dragged node; neighbors will follow via forces
     const sim = simulationRef.current;
     if (sim) {
       for (const n of d3NodesRef.current) {
-        if (ds.component.has(String(n.id))) {
-          // if fx/fy are null for some reason, initialize from x/y
+        if (String(n.id) === ds.draggedId) {
           n.fx = (n.fx ?? n.x) + dx;
           n.fy = (n.fy ?? n.y) + dy;
+          break;
         }
       }
+
       // update React positions quickly so edges render without waiting for many ticks
       setPositions((prev) => {
         const next = { ...prev };
-        for (const nid of ds.component) {
-          const p = next[nid] || { x: 0, y: 0 };
-          next[nid] = { x: p.x + dx, y: p.y + dy };
-        }
+        const p = next[String(id)] || { x: 0, y: 0 };
+        next[String(id)] = { x: p.x + dx, y: p.y + dy };
         return next;
       });
 
@@ -476,14 +477,15 @@ function Graph({
     const sim = simulationRef.current;
     if (sim) {
       for (const n of d3NodesRef.current) {
-        if (ds.component.has(String(n.id))) {
+        if (String(n.id) === ds.draggedId) {
           n.fx = null;
           n.fy = null;
+          break;
         }
       }
       sim.alphaTarget(0);
     }
-    dragStateRef.current = { component: new Set(), lastMouse: null };
+    dragStateRef.current = { draggedId: null, lastMouse: null };
   };
 
   return (
