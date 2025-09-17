@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, use } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Node from "./Node";
 import Edge from "./Edge";
 import { MinPriorityQueue } from "@datastructures-js/priority-queue";
@@ -17,25 +17,21 @@ function Graph({
   widthPx,
   heightPx,
 }) {
-  //main controls
+  // main controls
   const [sources, setSources] = useState(new Set());
   const [sourceNodes, setSourceNodes] = useState({});
   const [indegree, setIndegree] = useState({});
-  // const [algorithm, setAlgorithm] = useState(1); //1-dfs,2-bfs,3-dijkstra
 
-  // Build adjacency list
+  // Build adjacency list (string keys)
   const adjacency = useMemo(() => {
     const adj = {};
     edges.forEach(([u, v, w], i) => {
-      if (!adj[u]) adj[u] = [];
-      if (!adj[v]) adj[v] = [];
-
-      // push both directions (since graph looks undirected in your code)
-      adj[u].push({ node: v, weight: w, edgeId: i });
-      adj[v].push({ node: u, weight: w, edgeId: i });
-
-      setIndegree((prev) => ({ ...prev, [v]: (prev[v] || 0) + 1 }));
-      setIndegree((prev) => ({ ...prev, [u]: prev[u] || 0 })); // keep symmetry
+      const su = String(u);
+      const sv = String(v);
+      if (!adj[su]) adj[su] = [];
+      if (!adj[sv]) adj[sv] = [];
+      adj[su].push({ node: sv, weight: w, edgeId: i });
+      adj[sv].push({ node: su, weight: w, edgeId: i });
     });
     return adj;
   }, [edges]);
@@ -53,6 +49,11 @@ function Graph({
   // positions: { id: { x, y } }
   const [positions, setPositions] = useState({});
 
+  // Refs to expose d3 simulation and nodes to drag handlers
+  const simulationRef = useRef(null);
+  const d3NodesRef = useRef([]);
+  const dragStateRef = useRef({ component: new Set(), lastMouse: null });
+
   useEffect(() => {
     if (!nodes || nodes.length === 0) return;
     if (widthPx <= 0 || heightPx <= 0) return;
@@ -61,9 +62,9 @@ function Graph({
 
     // custom force to keep nodes inside board
     function forceBox(width, height, margin = 40) {
-      let nodes;
+      let nodesVar;
       function force() {
-        for (const node of nodes) {
+        for (const node of nodesVar) {
           if (node.x < margin) {
             node.x = margin;
             node.vx *= -0.5;
@@ -82,7 +83,7 @@ function Graph({
           }
         }
       }
-      force.initialize = (_) => (nodes = _);
+      force.initialize = (_) => (nodesVar = _);
       return force;
     }
 
@@ -93,7 +94,10 @@ function Graph({
       y: positions[id]?.y || Math.random() * heightPx,
     }));
 
-    const d3Links = edges.map(([u, v]) => ({ source: u, target: v }));
+    const d3Links = edges.map(([u, v]) => ({
+      source: String(u),
+      target: String(v),
+    }));
 
     const simulation = d3
       .forceSimulation(d3Nodes)
@@ -111,6 +115,10 @@ function Graph({
       // keep nodes inside board
       .force("box", forceBox(widthPx, heightPx, margin));
 
+    // save refs for drag handlers
+    simulationRef.current = simulation;
+    d3NodesRef.current = d3Nodes;
+
     simulation.on("tick", () => {
       setPositions(() => {
         const next = {};
@@ -121,7 +129,11 @@ function Graph({
       });
     });
 
-    return () => simulation.stop();
+    return () => {
+      simulation.stop();
+      simulationRef.current = null;
+      d3NodesRef.current = [];
+    };
   }, [nodes, edges, widthPx, heightPx]);
 
   // Called by Node: onPositionChange(id, x, y)
@@ -250,30 +262,31 @@ function Graph({
     const localOrder = [];
     const localExploredEdges = {};
     const localDistOrder = {};
+    const localVis = {};
     // Initialize pq with all source nodes
     for (const id of Object.keys(sourceNodes)) {
       if (sourceNodes[id]) {
         pq.enqueue({ id, dist: 0 });
         localDist[id] = 0;
-        // localOrder.push(id);
       }
     }
     let cur = 0;
     // Perform Dijkstra
     while (!pq.isEmpty()) {
       const { id: node } = pq.dequeue();
-      if (dijkVis[node]) continue; // already processed
-      dijkVis[node] = true;
+      if (localVis[node]) continue; // already processed
+      localVis[node] = true;
       // Explore neighbors
-      // console.log("Dijkstra visiting:", node);
       localOrder.push(node);
       localExploredEdges[cur] = [];
       localDistOrder[cur] = { ...localDist };
-      console.log("dist:", localDist);
       cur++;
       const neighbors = adjacency[node] || [];
       for (const { node: neighbor, weight, edgeId: curEdge } of neighbors) {
-        const newDist = localDist[node] + (weight || 1);
+        const newDist =
+          localDist[node] === Infinity
+            ? Infinity
+            : localDist[node] + (weight ?? 1);
         localExploredEdges[cur - 1].push(curEdge);
         if (
           localDist[neighbor] === undefined ||
@@ -287,7 +300,7 @@ function Graph({
     setDijkDist(localDist);
     setDijkOrder(localOrder);
     setDijkOrderId(localOrder.map((n) => String(n)));
-    // setDijkVis(dijkVis);
+    setDijkVis(localVis);
     setExploredEdgesDijk(localExploredEdges);
     setDijkDistOrder(localDistOrder);
   }, [adjacency, nodes, sourceNodes]);
@@ -347,7 +360,7 @@ function Graph({
         }
       }
     }
-  }, [step]);
+  }, [step, algorithm, dfsOrder, bfsOrder, dijkOrder]);
 
   useEffect(() => {
     for (const [id, src] of Object.entries(sourceNodes)) {
@@ -372,29 +385,114 @@ function Graph({
     setStep(0);
     setVisitedNodes({});
     setVisitedEdges({});
-    console.log("SourceNodes:", sourceNodes);
+    // console.log("SourceNodes:", sourceNodes);
   }, [sourceNodes]);
 
   useEffect(() => {
-    console.log("DfsOrder:", dfsOrder);
+    // console.log("DfsOrder:", dfsOrder);
   }, [dfsOrder]);
   useEffect(() => {
-    console.log("BfsOrder:", bfsOrder);
+    // console.log("BfsOrder:", bfsOrder);
   }, [bfsOrder]);
   useEffect(() => {
-    console.log("DijkOrder:", dijkOrder);
-    console.log("DijkDistOrder:", dijkDistOrder);
+    // console.log("DijkOrder:", dijkOrder);
+    // console.log("DijkDistOrder:", dijkDistOrder);
   }, [dijkOrder]);
+
+  // Utility: get connected component of a node (BFS)
+  const getComponent = (startId) => {
+    const comp = new Set();
+    const q = [String(startId)];
+    while (q.length > 0) {
+      const cur = q.shift();
+      if (comp.has(cur)) continue;
+      comp.add(cur);
+      const neighbors = adjacency[cur] || [];
+      for (const { node: nb } of neighbors) {
+        if (!comp.has(nb)) q.push(nb);
+      }
+    }
+    return comp;
+  };
+
+  // Drag handlers called from Node (client coords)
+  const handleDragStart = (id, clientX, clientY) => {
+    const comp = getComponent(id);
+    dragStateRef.current = {
+      component: comp,
+      lastMouse: { x: clientX, y: clientY },
+    };
+    const sim = simulationRef.current;
+    if (sim) {
+      sim.alphaTarget(0.3).restart();
+      // fix the nodes currently in the component so they move with us
+      for (const n of d3NodesRef.current) {
+        if (comp.has(String(n.id))) {
+          n.fx = n.x;
+          n.fy = n.y;
+        }
+      }
+    }
+  };
+
+  const handleDrag = (id, clientX, clientY) => {
+    const ds = dragStateRef.current;
+    if (!ds.lastMouse) return;
+    const dx = clientX - ds.lastMouse.x;
+    const dy = clientY - ds.lastMouse.y;
+    ds.lastMouse = { x: clientX, y: clientY };
+
+    // move all fixed nodes in the component
+    const sim = simulationRef.current;
+    if (sim) {
+      for (const n of d3NodesRef.current) {
+        if (ds.component.has(String(n.id))) {
+          // if fx/fy are null for some reason, initialize from x/y
+          n.fx = (n.fx ?? n.x) + dx;
+          n.fy = (n.fy ?? n.y) + dy;
+        }
+      }
+      // update React positions quickly so edges render without waiting for many ticks
+      setPositions((prev) => {
+        const next = { ...prev };
+        for (const nid of ds.component) {
+          const p = next[nid] || { x: 0, y: 0 };
+          next[nid] = { x: p.x + dx, y: p.y + dy };
+        }
+        return next;
+      });
+
+      // run a single tick so d3 updates internal positions immediately
+      try {
+        sim.tick();
+      } catch (e) {
+        // tick can sometimes throw if simulation stopped — ignore harmlessly
+      }
+    }
+  };
+
+  const handleDragEnd = (id, clientX, clientY) => {
+    const ds = dragStateRef.current;
+    const sim = simulationRef.current;
+    if (sim) {
+      for (const n of d3NodesRef.current) {
+        if (ds.component.has(String(n.id))) {
+          n.fx = null;
+          n.fy = null;
+        }
+      }
+      sim.alphaTarget(0);
+    }
+    dragStateRef.current = { component: new Set(), lastMouse: null };
+  };
 
   return (
     <svg width={width} height={height}>
       {/* Render edges — skip if positions missing (but we log once) */}
       {edges.map(([u, v, w], i) => {
-        const from = positions[u];
-        const to = positions[v];
+        const from = positions[String(u)];
+        const to = positions[String(v)];
         if (!from || !to) {
-          // still useful to warn (but not crash)
-          // console.warn(`Skipping edge ${u}-${v}, missing positions`);
           return null;
         }
         return (
@@ -460,6 +558,9 @@ function Graph({
                 setSourceNodes((prev) => ({ ...prev, [id]: !prev[id] }));
               }
             }}
+            onDragStart={handleDragStart}
+            onDrag={handleDrag}
+            onDragEnd={handleDragEnd}
           />
         );
       })}

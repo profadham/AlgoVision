@@ -1,5 +1,4 @@
-// Node.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 
 function Node({
@@ -14,24 +13,30 @@ function Node({
   onClick,
   source = false,
   distance = Infinity,
+  onDragStart,
+  onDrag,
+  onDragEnd,
 }) {
   const [dragging, setDragging] = useState(false);
-  // const [source, setSource] = useState(false);
 
-  // useEffect(() => {
-  //   console.log(`Dragging ${id}:`, dragging);
-  // }, [dragging]);
+  // Use pointer events (better for touch + mouse) and delegate drag behavior to Graph
+  const handlePointerDown = (e) => {
+    if (chooseSourceMode) return;
+    setDragging(true);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    onDragStart?.(id, e.clientX, e.clientY);
+  };
 
-  const handleMouseDown = () => setDragging(true);
-  const handleMouseUp = () => setDragging(false);
-
-  const handleMouseMove = (e) => {
+  const handlePointerMove = (e) => {
     if (!dragging) return;
-    const svg = e.target.closest("svg");
-    const rect = svg.getBoundingClientRect();
-    const newX = e.clientX - rect.left;
-    const newY = e.clientY - rect.top;
-    onPositionChange(id, newX, newY);
+    onDrag?.(id, e.clientX, e.clientY);
+  };
+
+  const handlePointerUp = (e) => {
+    if (!dragging) return;
+    setDragging(false);
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    onDragEnd?.(id, e.clientX, e.clientY);
   };
 
   return (
@@ -41,16 +46,16 @@ function Node({
         cy={y}
         r="30"
         fill={colour}
-        onMouseDown={chooseSourceMode ? null : handleMouseDown}
-        onMouseUp={chooseSourceMode ? null : handleMouseUp}
-        onMouseMove={chooseSourceMode ? null : handleMouseMove}
+        onPointerDown={chooseSourceMode ? null : handlePointerDown}
+        onPointerUp={chooseSourceMode ? null : handlePointerUp}
+        onPointerMove={chooseSourceMode ? null : handlePointerMove}
         style={{ cursor: "grab" }}
         onClick={onClick}
         animate={{
           fill: isVisited ? "orange" : source ? "red" : colour,
           r: isVisited ? 35 : 30,
         }}
-        transition={{ duration: 5 }}
+        transition={{ duration: 0.12 }}
       />
       <text
         x={x}
@@ -65,7 +70,7 @@ function Node({
       </text>
 
       <text
-        x={x + 40} // 40px to the right of the circle
+        x={x + 40}
         y={y}
         textAnchor="start"
         dy=".3em"
